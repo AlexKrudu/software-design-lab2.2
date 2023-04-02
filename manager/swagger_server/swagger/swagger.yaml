@@ -1,0 +1,169 @@
+openapi: 3.0.1
+info:
+  title: Manager API
+  description: API for gym management operations
+  version: 1.0.0
+servers:
+- url: /
+tags:
+- name: manager
+  description: Handles for gym manager administrative usage
+paths:
+  /manager/get_user_subcription_info:
+    get:
+      tags:
+      - manager
+      summary: Gets information about user's subscription
+      operationId: manager_get_user_subcription_info_get
+      parameters:
+      - name: phone_number
+        in: query
+        description: User's phone number to fetch info for
+        required: true
+        style: form
+        explode: true
+        schema:
+          minLength: 1
+          type: string
+      responses:
+        "200":
+          description: Information about user's gym subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+        "404":
+          description: No users with such phone number
+          content: {}
+      x-openapi-router-controller: swagger_server.controllers.manager_controller
+  /manager/register_user:
+    post:
+      tags:
+      - manager
+      summary: Add new user with given username
+      operationId: manager_register_user_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/manager_register_user_body'
+        required: true
+      responses:
+        "200":
+          description: Id of created user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_1'
+      x-codegen-request-body-name: register_user_response
+      x-openapi-router-controller: swagger_server.controllers.manager_controller
+  /manager/renew_user_subscription:
+    post:
+      tags:
+      - manager
+      summary: Add new user with given username
+      operationId: manager_renew_user_subscription_post
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/manager_renew_user_subscription_body'
+        required: false
+      responses:
+        "200":
+          description: Id of created user
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/inline_response_200_2'
+      x-codegen-request-body-name: renew_user_subscription_response
+      x-openapi-router-controller: swagger_server.controllers.manager_controller
+components:
+  schemas:
+    manager_register_user_body:
+      required:
+      - name
+      - phone_number
+      - subscription_duration_days
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+          description: Gym member's name
+        phone_number:
+          minLength: 1
+          type: string
+          description: Gym member's phone number
+        subscription_duration_days:
+          minimum: 1
+          type: integer
+          description: Продолжительность абонимента в днях
+      additionalProperties: false
+    inline_response_200_1:
+      type: object
+      properties:
+        user_id:
+          type: string
+          description: User's ID which will be used for user identification in future
+            requests
+      additionalProperties: false
+      example:
+        user_id: user_id
+    manager_renew_user_subscription_body:
+      required:
+      - subscription_duration_days
+      - user_id
+      type: object
+      properties:
+        user_id:
+          minLength: 1
+          type: string
+        subscription_duration_days:
+          minimum: 1
+          type: integer
+          description: Продолжительность абонимента в днях
+      additionalProperties: false
+    inline_response_200:
+      required:
+      - active_until
+      - subscription_info
+      - user_name
+      type: object
+      properties:
+        active_until:
+          type: string
+          description: date until gym subscription is active
+          format: date-time
+        user_name:
+          type: string
+        user_id:
+          type: string
+        subscription_info:
+          type: array
+          description: User's subscriptions history
+          items:
+            type: object
+            additionalProperties: false
+      additionalProperties: false
+      example:
+        subscription_info:
+        - {}
+        - {}
+        user_id: user_id
+        user_name: user_name
+        active_until: 2000-01-23T04:56:07.000+00:00
+    inline_response_200_2:
+      required:
+      - active_until
+      type: object
+      properties:
+        active_until:
+          type: string
+          description: date until gym subscription is active
+          format: date-time
+      additionalProperties: false
+      example:
+        active_until: 2000-01-23T04:56:07.000+00:00
+x-original-swagger-version: "2.0"
+

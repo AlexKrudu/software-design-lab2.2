@@ -1,0 +1,112 @@
+openapi: 3.0.1
+info:
+  title: User API
+  description: API for gym user operations
+  version: 1.0.0
+servers:
+- url: /
+tags:
+- name: user
+  description: Gym member usage handles
+paths:
+  /user/enter_gym_turnstile:
+    get:
+      tags:
+      - user
+      summary: Tries to enter gym
+      operationId: user_enter_gym_turnstile_get
+      parameters:
+      - name: phone_number
+        in: query
+        description: User's phone number
+        required: true
+        style: form
+        explode: true
+        schema:
+          minLength: 1
+          type: string
+      responses:
+        "200":
+          description: Gym's enter request approved
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+        "403":
+          description: Gym's enter request denied. Inactive subscription
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/inline_response_403'
+        "409":
+          description: Already entered gym
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+      x-openapi-router-controller: swagger_server.controllers.user_controller
+  /user/exit_gym_turnstile:
+    get:
+      tags:
+      - user
+      summary: Tries to exit gym
+      operationId: user_exit_gym_turnstile_get
+      parameters:
+      - name: phone_number
+        in: query
+        description: User's phone number
+        required: true
+        style: form
+        explode: true
+        schema:
+          minLength: 1
+          type: string
+      responses:
+        "200":
+          description: Gym's exit request approved
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/inline_response_200_1'
+        "409":
+          description: Gym was not entered
+          content: {}
+      x-openapi-router-controller: swagger_server.controllers.user_controller
+components:
+  schemas:
+    inline_response_200_1:
+      required:
+      - exit_at
+      type: object
+      properties:
+        exit_at:
+          type: string
+          description: Time of user's gym exit
+          format: date-time
+      additionalProperties: false
+      example:
+        exit_at: 2000-01-23T04:56:07.000+00:00
+    inline_response_200:
+      required:
+      - enter_at
+      type: object
+      properties:
+        enter_at:
+          type: string
+          description: Time of user's gym enter
+          format: date-time
+      additionalProperties: false
+      example:
+        enter_at: 2000-01-23T04:56:07.000+00:00
+    inline_response_403:
+      required:
+      - subscription_ended_at
+      type: object
+      properties:
+        subscription_ended_at:
+          type: string
+          description: Last active subscription ended at
+          format: date-time
+      additionalProperties: false
+x-original-swagger-version: "2.0"
+
